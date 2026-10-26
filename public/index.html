@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Carnicería de Barrio — Pedidos Directos</title>
+  <!-- Tailwind CSS CDN para diseño moderno y ligero -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/custom.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fef2f2',
+              100: '#fee2e2',
+              600: '#dc2626',
+              700: '#b91c1c',
+              800: '#991b1b',
+              900: '#7f1d1d'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen pb-28">
+
+  <!-- CABECERA DE LA TIENDA -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-white font-bold text-xl shadow-inner">
+          🥩
+        </div>
+        <div>
+          <h1 id="store-title" class="font-extrabold text-gray-900 text-lg leading-tight">Carnicería de Barrio</h1>
+          <p id="store-schedule" class="text-xs text-gray-500 font-medium truncate max-w-[220px]">Cargando horarios...</p>
+        </div>
+      </div>
+      <a id="store-phone-link" href="#" class="flex items-center gap-1.5 text-xs font-bold text-green-700 bg-green-50 px-2.5 py-1.5 rounded-full border border-green-200">
+        <span>WhatsApp</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 pt-3 space-y-4">
+
+    <!-- REGLA DE ORO / AVISO DE PESO DESTACADO -->
+    <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3.5 shadow-sm flex items-start gap-3">
+      <span class="text-2xl">⚖️</span>
+      <div>
+        <h4 class="font-bold text-amber-900 text-sm">Precios Orientativos</h4>
+        <p class="text-xs text-amber-800 leading-snug mt-0.5">
+          La carne se vende al peso: <strong>el precio del catálogo es orientativo</strong> y el definitivo se fija al pesar el producto en la carnicería. Pagarás en tienda al recoger.
+        </p>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: HOY EN EL MOSTRADOR -->
+    <section id="today-counter-section" class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hidden">
+      <div class="relative h-48 bg-gray-200">
+        <img id="today-counter-img" src="" alt="Hoy en el mostrador" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4">
+          <div>
+            <span class="inline-block bg-red-600 text-white text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md mb-1.5 shadow">
+              Hoy en el Mostrador
+            </span>
+            <p id="today-counter-text" class="text-white text-sm font-semibold leading-snug drop-shadow-sm">
+              Cargando sugerencias del carnicero...
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELECTOR DE CATEGORÍAS (Barra Horizontal con Scroll Táctil) -->
+    <section class="sticky top-[61px] bg-gray-50/95 backdrop-blur py-2 z-20 -mx-4 px-4 overflow-x-auto no-scrollbar">
+      <div class="flex gap-2 min-w-max">
+        <button class="cat-btn bg-red-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-md transition-all active:scale-95" data-category="TODOS">
+          Todos
+        </button>
+        <button class="cat-btn bg-white text-gray-700 font-bold text-sm px-4 py-2 rounded-xl border border-gray-200 shadow-sm transition-all active:scale-95" data-category="Ternera">
+          Ternera
+        </button>
+        <button class="cat-btn bg-white text-gray-700 font-bold text-sm px-4 py-2 rounded-xl border border-gray-200 shadow-sm transition-all active:scale-95" data-category="Cordero">
+          Cordero
+        </button>
+        <button class="cat-btn bg-white text-gray-700 font-bold text-sm px-4 py-2 rounded-xl border border-gray-200 shadow-sm transition-all active:scale-95" data-category="Pollo y aves">
+          Pollo y aves
+        </button>
+        <button class="cat-btn bg-white text-gray-700 font-bold text-sm px-4 py-2 rounded-xl border border-gray-200 shadow-sm transition-all active:scale-95" data-category="Cerdo">
+          Cerdo
+        </button>
+        <button class="cat-btn bg-white text-gray-700 font-bold text-sm px-4 py-2 rounded-xl border border-gray-200 shadow-sm transition-all active:scale-95" data-category="Embutidos y elaborados">
+          Embutidos
+        </button>
+        <button class="cat-btn bg-white text-gray-700 font-bold text-sm px-4 py-2 rounded-xl border border-gray-200 shadow-sm transition-all active:scale-95" data-category="Del día">
+          Del día
+        </button>
+      </div>
+    </section>
+
+    <!-- LISTADO DE PRODUCTOS -->
+    <section id="products-container" class="grid grid-cols-1 gap-4">
+      <!-- Inyectado por catalog.js -->
+    </section>
+
+    <!-- PIE DE PÁGINA SIMPLE -->
+    <footer class="text-center py-6 text-xs text-gray-400 space-y-2">
+      <p>Teléfono carnicería: <span id="store-phone-display" class="font-medium text-gray-600">...</span></p>
+      <p>© Comercio de barrio — Hecho para facilitar los pedidos a los vecinos</p>
+      <div class="pt-2">
+        <a href="panel.html" class="text-gray-400 hover:text-red-700 underline text-xs">
+          🔒 Acceso Mostrador (Carnicero)
+        </a>
+      </div>
+    </footer>
+  </main>
+
+  <!-- BOTÓN FLOTANTE DE CESTA -->
+  <aside id="floating-cart-btn" class="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40 hidden">
+    <button class="w-full bg-red-700 hover:bg-red-800 text-white rounded-2xl p-4 shadow-xl flex items-center justify-between font-bold text-lg border-2 border-red-500 active:scale-98 transition-transform">
+      <div class="flex items-center gap-3">
+        <div class="bg-white text-red-700 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm shadow-sm">
+          <span id="cart-count">0</span>
+        </div>
+        <span>Ver mi pedido</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-normal opacity-90">Aprox.</span>
+        <span id="floating-cart-total" class="font-extrabold text-xl">0.00 €</span>
+        <span class="text-xl">➔</span>
+      </div>
+    </button>
+  </aside>
+
+  <!-- MODAL DE LA CESTA Y FORMULARIO DE RECOGIDA -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex flex-col justify-end hidden">
+    <div class="bg-white rounded-t-3xl max-h-[92vh] flex flex-col max-w-md mx-auto w-full overflow-hidden shadow-2xl animate-fade-in">
+      
+      <!-- Cabecera del modal -->
+      <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🛒</span>
+          <h2 class="font-extrabold text-gray-900 text-lg">Tu Pedido</h2>
+        </div>
+        <button id="close-cart-btn" class="w-9 h-9 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-bold text-lg hover:bg-gray-300">
+          ✕
+        </button>
+      </div>
+
+      <!-- Contenido scrolleable -->
+      <div class="p-4 overflow-y-auto space-y-4 flex-1">
+        
+        <!-- Aviso obligatorio de peso -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 font-medium">
+          ⚖️ <strong>Recordatorio:</strong> Precio orientativo: el definitivo se fija al pesar en tienda.
+        </div>
+
+        <!-- Lista de productos en la cesta -->
+        <div id="cart-empty-message" class="text-center py-8 text-gray-500 font-medium hidden">
+          No tienes ningún producto en la cesta todavía.
+        </div>
+        <div id="cart-items-list" class="divide-y divide-gray-100">
+          <!-- Inyectado por catalog.js -->
+        </div>
+
+        <!-- Total orientativo -->
+        <div class="bg-gray-100 rounded-xl p-3 flex justify-between items-center font-bold">
+          <span class="text-gray-700">Total orientativo:</span>
+          <span id="cart-modal-total" class="text-2xl text-red-700 font-black">0.00 €</span>
+        </div>
+
+        <!-- FORMULARIO SIMPLE PARA EL VECINO -->
+        <form id="order-form" class="space-y-3.5 pt-2">
+          <h3 class="font-extrabold text-gray-900 text-base border-b pb-1">Datos para la recogida</h3>
+          
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Nombre y Apellidos *</label>
+            <input type="text" id="order-name" required placeholder="Ej: María Gómez"
+                   class="w-full text-base border-gray-300 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-600 focus:border-red-600">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Vivienda (Bloque y Piso) *</label>
+            <input type="text" id="order-address" required placeholder="Ej: Bloque 3, 2º B"
+                   class="w-full text-base border-gray-300 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-600 focus:border-red-600">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Teléfono Móvil (WhatsApp) *</label>
+            <input type="tel" id="order-phone" required placeholder="Ej: 612 34 56 78"
+                   class="w-full text-base border-gray-300 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-600 focus:border-red-600">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Franja de Recogida en Tienda *</label>
+            <select id="order-slot" required 
+                    class="w-full text-base border-gray-300 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-600 focus:border-red-600 font-medium">
+              <option value="">Cargando franjas...</option>
+            </select>
+            <p id="slots-warning" class="text-xs text-amber-700 mt-1.5 hidden font-medium"></p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Notas para el carnicero (opcional)</label>
+            <textarea id="order-notes" rows="2" placeholder="Ej: Pasaré a última hora; por favor separa en bolsas de 2 filetes..."
+                      class="w-full text-sm border-gray-300 rounded-xl p-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-600 focus:border-red-600"></textarea>
+          </div>
+
+          <div id="order-form-section" class="pt-2">
+            <button type="submit" id="submit-order-btn"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold text-lg py-4 px-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-98 transition-all">
+              <span>Enviar Pedido por WhatsApp</span>
+              <span class="text-xl">➔</span>
+            </button>
+            <p class="text-center text-[11px] text-gray-400 mt-2">
+              Se creará tu código de pedido y se abrirá WhatsApp para confirmarlo con 1 toque.
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMACIÓN FINAL (CÓDIGO DE PEDIDO) -->
+  <div id="confirmation-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl animate-fade-in border-4 border-green-500">
+      <div class="w-16 h-16 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto text-3xl font-black">
+        ✓
+      </div>
+      
+      <div>
+        <h3 class="text-xl font-black text-gray-900">¡Pedido Registrado!</h3>
+        <p class="text-xs text-gray-500 mt-1">Tu pedido ya está en el sistema de la carnicería.</p>
+      </div>
+
+      <div class="bg-gray-100 rounded-2xl p-4 border border-gray-200">
+        <span class="text-xs text-gray-500 uppercase tracking-wider font-bold block">Tu Código de Pedido</span>
+        <span id="conf-order-code" class="text-4xl font-black text-red-700 tracking-tight block mt-1">C-001</span>
+        
+        <div class="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-600 space-y-1">
+          <p>Recogida: <strong id="conf-pickup-slot" class="text-gray-900">14:00</strong></p>
+          <p>Total orientativo: <strong id="conf-estimated-total" class="text-gray-900">0.00 €</strong></p>
+          <p class="text-amber-800 text-[11px] font-semibold mt-1">⚠️ El precio definitivo se fija al pesar en tienda.</p>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-2">
+        <a id="conf-whatsapp-btn" href="#" target="_blank"
+           class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 px-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-base active:scale-95 transition-all">
+          <span>Abrir WhatsApp y Enviar al Carnicero</span>
+        </a>
+        <button type="button" onclick="window.location.reload()" 
+                class="w-full text-xs text-gray-500 font-semibold py-2 hover:text-gray-800">
+          Volver al catálogo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST DE NOTIFICACIÓN FLOTANTE -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white font-bold text-sm px-4 py-2.5 rounded-full shadow-2xl opacity-0 pointer-events-none translate-y-4 transition-all duration-300 z-50 flex items-center gap-2">
+    ✓ Producto añadido
+  </div>
+
+  <script src="js/catalog.js"></script>
+</body>
+</html>

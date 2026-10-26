@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración — Carnicería</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen pb-16">
+
+  <!-- CABECERA -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">⚙️</span>
+        <div>
+          <h1 class="font-black text-gray-900 text-lg leading-tight">Administración de la Carnicería</h1>
+          <p class="text-xs text-gray-500 font-medium">Gestiona productos, precios, franjas y ofertas del día</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="panel.html" class="bg-red-700 hover:bg-red-800 text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all">
+          <span>➔ Volver al Mostrador</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 space-y-6">
+
+    <!-- FORMULARIO DE AJUSTES GENERALES -->
+    <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
+      <h2 class="text-lg font-black text-gray-900 border-b pb-3 mb-4 flex items-center gap-2">
+        <span>🏪</span> Datos de la Tienda y Franjas de Recogida
+      </h2>
+
+      <form id="store-config-form" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Nombre de la Tienda</label>
+            <input type="text" id="cfg-store-name" required class="w-full border rounded-xl p-2.5 text-sm bg-gray-50 font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">WhatsApp de Pedidos (con +34)</label>
+            <input type="text" id="cfg-store-phone" required class="w-full border rounded-xl p-2.5 text-sm bg-gray-50 font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Horario Visible</label>
+            <input type="text" id="cfg-store-schedule" required class="w-full border rounded-xl p-2.5 text-sm bg-gray-50 font-medium">
+          </div>
+        </div>
+
+        <!-- SECCIÓN: HOY EN EL MOSTRADOR -->
+        <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200 space-y-3">
+          <h3 class="text-sm font-black text-amber-900 flex items-center gap-2">
+            <span>⭐</span> Sección «Hoy en el mostrador» (Visible en la portada de los vecinos)
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-amber-800 uppercase tracking-wide mb-1">Texto corto o sugerencia del carnicero</label>
+              <textarea id="cfg-counter-text" rows="2" class="w-full border rounded-xl p-2.5 text-sm bg-white font-medium" placeholder="Ej: ¡Hoy ternasco de Aragón recién llegado y chuletón madurado!"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-amber-800 uppercase tracking-wide mb-1">URL de la Foto del día</label>
+              <input type="url" id="cfg-counter-photo" class="w-full border rounded-xl p-2.5 text-sm bg-white font-medium" placeholder="https://ejemplo.com/foto-mostrador.jpg">
+            </div>
+          </div>
+        </div>
+
+        <!-- FRANJAS Y HORAS LÍMITES -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide">
+              Franjas de Recogida y Horas Límite de Pedido
+            </label>
+            <button type="button" onclick="addSlotRow()" class="text-xs font-bold text-blue-700 hover:text-blue-900 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+              + Añadir Franja
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 mb-3">Si pasa la hora límite, la franja se desactiva automáticamente en el móvil de los vecinos.</p>
+          <div id="slots-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <!-- Inyectado por admin.js -->
+          </div>
+        </div>
+
+        <!-- SEGURIDAD: PIN -->
+        <div class="border-t pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Cambiar PIN del Mostrador</label>
+            <input type="password" id="cfg-new-pin" maxlength="8" placeholder="Dejar en blanco para mantener el actual" class="w-full border rounded-xl p-2.5 text-sm bg-gray-50">
+          </div>
+          <div class="flex items-end">
+            <button type="submit" class="w-full bg-red-700 hover:bg-red-800 text-white font-extrabold py-3 px-6 rounded-xl shadow-md transition-all">
+              💾 Guardar Ajustes de la Tienda
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- GESTIÓN DE PRODUCTOS DEL CATÁLOGO -->
+    <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
+      <div class="flex items-center justify-between border-b pb-4 mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="text-lg font-black text-gray-900 flex items-center gap-2">
+            <span>🥩</span> Catálogo de Productos y Cortes
+          </h2>
+          <p class="text-xs text-gray-500 font-medium">Precios orientativos, opciones de corte y disponibilidad</p>
+        </div>
+        <button onclick="openCreateProductModal()" class="bg-green-600 hover:bg-green-700 text-white font-extrabold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow transition-all">
+          <span>+ Añadir Producto</span>
+        </button>
+      </div>
+
+      <!-- TABLA DE PRODUCTOS -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-gray-50 text-gray-500 font-bold uppercase text-[11px] border-b">
+            <tr>
+              <th class="p-3">Producto / Categoría</th>
+              <th class="p-3">Precio Orientativo</th>
+              <th class="p-3">Opciones de Preparación</th>
+              <th class="p-3">Estado</th>
+              <th class="p-3 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="admin-products-table" class="divide-y divide-gray-100">
+            <!-- Inyectado por admin.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL AÑADIR / EDITAR PRODUCTO -->
+  <div id="product-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-fade-in max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="product-modal-title" class="text-lg font-black text-gray-900">Añadir Producto</h3>
+        <button type="button" onclick="document.getElementById('product-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-700 font-bold text-xl">
+          ✕
+        </button>
+      </div>
+
+      <form id="product-form" class="space-y-4">
+        <input type="hidden" id="prod-id">
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Nombre del Producto *</label>
+          <input type="text" id="prod-name" required placeholder="Ej: Chuletón de Vaca Madurada" class="w-full border rounded-xl p-2.5 text-sm">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Categoría *</label>
+            <select id="prod-category" required class="w-full border rounded-xl p-2.5 text-sm bg-white font-medium">
+              <option value="Ternera">Ternera</option>
+              <option value="Cordero">Cordero</option>
+              <option value="Pollo y aves">Pollo y aves</option>
+              <option value="Cerdo">Cerdo</option>
+              <option value="Embutidos y elaborados">Embutidos y elaborados</option>
+              <option value="Del día">Del día</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Tipo de Venta *</label>
+            <select id="prod-unit" required class="w-full border rounded-xl p-2.5 text-sm bg-white font-medium">
+              <option value="kg">Por Kilo (en pasos de 0.25 kg)</option>
+              <option value="ud">Por Unidad (en pasos de 1)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Precio Orientativo (€) *</label>
+          <input type="number" step="0.01" min="0.01" id="prod-price" required placeholder="14.50" class="w-full border rounded-xl p-2.5 text-sm font-bold">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Opciones de Preparación (separadas por comas)</label>
+          <input type="text" id="prod-options" placeholder="Filetes finos, Grosor normal, Para guisar, Para congelar" class="w-full border rounded-xl p-2.5 text-sm">
+          <p class="text-[11px] text-gray-500 mt-1">El cliente podrá elegir una de estas opciones al pedir este producto.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">URL de la Foto</label>
+          <input type="url" id="prod-image" placeholder="https://ejemplo.com/carne.jpg" class="w-full border rounded-xl p-2.5 text-sm">
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="prod-available" class="w-5 h-5 text-red-600 rounded border-gray-300">
+          <label for="prod-available" class="text-sm font-bold text-gray-800">Producto disponible para la venta</label>
+        </div>
+
+        <div class="flex gap-2 pt-3 border-t">
+          <button type="button" id="cancel-product-btn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-sm">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 bg-red-700 hover:bg-red-800 text-white font-extrabold py-3 rounded-xl text-sm shadow">
+            Guardar Producto
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+/* Estilos personalizados para la Carnicería */
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes pulseBadge {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); background-color: #ef4444; }
+  100% { transform: scale(1); }
+}
+
+.pulse-alert {
+  animation: pulseBadge 1.2s infinite;
+}
+
+.btn-touch-large {
+  min-height: 54px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+/* ========================================================= */
+/* DISEÑO VISUAL DE TICKET TÉRMICO DE 80mm PARA LA BOLSA     */
+/* ========================================================= */
+.thermal-receipt {
+  font-family: 'Courier New', Courier, monospace, monospace;
+  background-color: #fffdfa;
+  color: #111;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  padding: 24px 18px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  border-top: 3px dashed #d1d5db;
+  border-bottom: 3px dashed #d1d5db;
+}
+
+/* Efecto de papel de recibo */
+.thermal-receipt::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: radial-gradient(circle, transparent, transparent 50%, #fffdfa 50%, #fffdfa 100% ) repeat-x;
+  background-size: 12px 12px;
+}
+
+/* Estilos de impresión para cuando se conecta una impresora física */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #thermal-print-area, #thermal-print-area * {
+    visibility: visible;
+  }
+
+  #thermal-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm !important;
+    max-width: 80mm !important;
+    padding: 2mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
