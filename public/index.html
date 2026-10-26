@@ -176,7 +176,12 @@
 
         <!-- FORMULARIO SIMPLE PARA EL VECINO -->
         <form id="order-form" class="space-y-3.5 pt-2">
-          <h3 class="font-extrabold text-gray-900 text-base border-b pb-1">Datos para la recogida</h3>
+          <div class="border-b pb-1">
+            <h3 class="font-extrabold text-gray-900 text-base">Datos para la recogida</h3>
+            <p id="remembered-hint" class="text-xs text-green-700 font-bold mt-0.5 hidden flex items-center gap-1">
+              <span>✓</span> Tus datos se recuerdan automáticamente en este móvil
+            </p>
+          </div>
           
           <div>
             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Nombre y Apellidos *</label>

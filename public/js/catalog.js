@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadProducts();
   setupCategoryButtons();
   setupEventListeners();
+  loadSavedCustomerData();
 });
 
 // 1. Cargar Configuración de la Tienda y Franjas
@@ -368,6 +369,7 @@ function setupEventListeners() {
   const orderForm = document.getElementById('order-form');
 
   openCartBtn.addEventListener('click', () => {
+    loadSavedCustomerData();
     cartModal.classList.remove('hidden');
     document.body.classList.add('overflow-hidden');
   });
@@ -428,6 +430,15 @@ function setupEventListeners() {
 
       const data = await res.json();
       if (data.success) {
+        // Recordar datos del vecino en el navegador de su móvil
+        try {
+          localStorage.setItem('vecino_name', name);
+          localStorage.setItem('vecino_address', address);
+          localStorage.setItem('vecino_phone', phone);
+        } catch (e) {
+          console.warn('No se pudo guardar en localStorage:', e);
+        }
+
         // Limpiar cesta
         cart = [];
         updateCartUI();
@@ -460,3 +471,28 @@ function showConfirmationModal(order, whatsappLink) {
   modal.classList.remove('hidden');
   document.body.classList.add('overflow-hidden');
 }
+
+// Carga automática de datos recordados del vecino
+function loadSavedCustomerData() {
+  try {
+    const savedName = localStorage.getItem('vecino_name');
+    const savedAddress = localStorage.getItem('vecino_address');
+    const savedPhone = localStorage.getItem('vecino_phone');
+
+    const nameInput = document.getElementById('order-name');
+    const addressInput = document.getElementById('order-address');
+    const phoneInput = document.getElementById('order-phone');
+    const hintEl = document.getElementById('remembered-hint');
+
+    if (savedName && nameInput) nameInput.value = savedName;
+    if (savedAddress && addressInput) addressInput.value = savedAddress;
+    if (savedPhone && phoneInput) phoneInput.value = savedPhone;
+
+    if (savedName && savedAddress && savedPhone && hintEl) {
+      hintEl.classList.remove('hidden');
+    }
+  } catch (e) {
+    console.warn('Error leyendo de localStorage:', e);
+  }
+}
+
