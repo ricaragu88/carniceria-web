@@ -35,6 +35,16 @@ Carnicero/
 
 ---
 
+## 🌐 Acceso al Servidor en Producción (Oracle Cloud)
+
+La aplicación está desplegada en el servidor de producción con certificado SSL automático y alta disponibilidad:
+
+* 📱 **Catálogo para los vecinos:** [https://carniceriahispanidad.duckdns.org](https://carniceriahispanidad.duckdns.org)
+* 📋 **Panel del Carnicero (Mostrador):** [https://carniceriahispanidad.duckdns.org/panel.html](https://carniceriahispanidad.duckdns.org/panel.html) *(PIN: `1234`)*
+* ⚙️ **Administración (Productos, horarios y WhatsApp):** [https://carniceriahispanidad.duckdns.org/admin.html](https://carniceriahispanidad.duckdns.org/admin.html)
+
+---
+
 ## 🚀 Cómo probarlo en local (En tu ordenador)
 
 ### Paso 1: Instalar dependencias
