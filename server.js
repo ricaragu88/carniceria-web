@@ -145,14 +145,18 @@ app.delete('/api/products/:id', (req, res) => {
 // 3. Asistente Chef y Recetas Inteligentes
 app.post('/api/chef/generate', async (req, res) => {
   try {
-    const { mode, query, diners, appliance, healthy } = req.body;
+    const { mode, query, diners, appliances, appliance, healthy } = req.body;
     const availableProducts = DB.getProducts(false); // Solo productos disponibles
+
+    const userAppliances = Array.isArray(appliances) && appliances.length > 0 
+      ? appliances 
+      : (appliance ? [appliance] : ['sarten']);
 
     const recipe = await GeminiChefService.generateRecipe({
       mode: mode || 'chef_gourmet',
       query: query || '',
       diners: parseInt(diners) || 4,
-      appliance: appliance || 'sarten',
+      appliances: userAppliances,
       healthy: healthy !== false,
       availableProducts
     });

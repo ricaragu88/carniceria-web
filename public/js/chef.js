@@ -8,7 +8,7 @@
 
 let activeRecipe = null;
 let selectedMode = 'chef_gourmet';
-let selectedAppliance = 'sarten';
+let selectedAppliances = new Set(['sarten', 'airfryer']);
 let timerInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -85,17 +85,25 @@ function setupChefUI() {
     });
   });
 
-  // Selector de Electrodoméstico
+  // Selector Multiselección de Electrodomésticos
   const applianceBtns = document.querySelectorAll('.appliance-btn');
   applianceBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      applianceBtns.forEach(b => {
-        b.classList.remove('bg-red-700', 'text-white', 'shadow-md');
-        b.classList.add('bg-gray-100', 'text-gray-700');
-      });
-      btn.classList.remove('bg-gray-100', 'text-gray-700');
-      btn.classList.add('bg-red-700', 'text-white', 'shadow-md');
-      selectedAppliance = btn.dataset.appliance;
+      const app = btn.dataset.appliance;
+      const checkIcon = btn.querySelector('.check-icon');
+      if (selectedAppliances.has(app)) {
+        if (selectedAppliances.size > 1) {
+          selectedAppliances.delete(app);
+          btn.className = 'appliance-btn p-2.5 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 border-2 border-gray-200 select-none';
+          if (checkIcon) checkIcon.classList.add('hidden');
+        } else {
+          alert('Por favor, mantén seleccionado al menos un electrodoméstico que tengas en casa.');
+        }
+      } else {
+        selectedAppliances.add(app);
+        btn.className = 'appliance-btn p-2.5 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 bg-red-700 text-white shadow-md border-2 border-red-700 select-none';
+        if (checkIcon) checkIcon.classList.remove('hidden');
+      }
     });
   });
 
@@ -148,7 +156,7 @@ async function handleGenerateRecipe() {
         mode: selectedMode,
         query: query,
         diners: diners,
-        appliance: selectedAppliance,
+        appliances: Array.from(selectedAppliances),
         healthy: healthy
       })
     });
@@ -186,9 +194,10 @@ function renderRecipeResult(recipe) {
   document.getElementById('res-recipe-diners').textContent = `${recipe.diners} personas`;
   document.getElementById('res-recipe-time').textContent = `~${recipe.prep_time_minutes || 30} min`;
 
-  // Icono del electrodoméstico
+  // Electrodoméstico recomendado por el Chef
   const icons = { sarten: '🍳 Sartén / Plancha', airfryer: '🍟 Airfryer', horno: '🥘 Horno', olla_guiso: '🍲 Olla / Guiso' };
-  document.getElementById('res-recipe-appliance').textContent = icons[recipe.appliance] || 'Cocina libre';
+  const label = recipe.recommended_appliance_label || icons[recipe.recommended_appliance] || icons[recipe.appliance] || 'Cocina libre';
+  document.getElementById('res-recipe-appliance').textContent = label;
 
   // Consejos del Chef
   document.getElementById('res-healthy-tip').textContent = recipe.healthy_tip || 'Equilibrado y nutritivo.';

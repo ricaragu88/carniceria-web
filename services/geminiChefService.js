@@ -2,20 +2,20 @@
  * SERVICIO INTELIGENTE DE CHEF Y RECETAS (Chef Hispanidad)
  * 
  * Conecta con Google Gemini para generar recetas adaptadas al mostrador real
- * de la carnicería, o utiliza el motor culinario de respaldo integrado si
- * la API no está configurada o se encuentra sin conexión.
+ * de la carnicería, recomendando el mejor método de cocción según los
+ * electrodomésticos de los que dispone el vecino en su cocina.
  */
 
 class GeminiChefService {
   /**
    * Genera una receta o menú semanal adaptado a los productos disponibles en la carnicería
    */
-  static async generateRecipe({ mode, query, diners = 4, appliance = 'sarten', healthy = true, availableProducts = [] }) {
+  static async generateRecipe({ mode, query, diners = 4, appliances = ['sarten'], healthy = true, availableProducts = [] }) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (apiKey) {
       try {
-        const aiResult = await this.callGeminiAPI({ apiKey, mode, query, diners, appliance, healthy, availableProducts });
+        const aiResult = await this.callGeminiAPI({ apiKey, mode, query, diners, appliances, healthy, availableProducts });
         if (aiResult) return aiResult;
       } catch (err) {
         console.warn('Fallo llamada Gemini, utilizando motor culinario de respaldo:', err.message);
@@ -23,23 +23,25 @@ class GeminiChefService {
     }
 
     // Motor culinario de respaldo garantizado (100% offline y funcional)
-    return this.generateFallbackRecipe({ mode, query, diners, appliance, healthy, availableProducts });
+    return this.generateFallbackRecipe({ mode, query, diners, appliances, healthy, availableProducts });
   }
 
   /**
    * Llamada a la API de Google Gemini (v1beta generateContent)
    */
-  static async callGeminiAPI({ apiKey, mode, query, diners, appliance, healthy, availableProducts }) {
+  static async callGeminiAPI({ apiKey, mode, query, diners, appliances = ['sarten'], healthy, availableProducts }) {
     const productCatalogBrief = availableProducts.map(p => 
       `- ID ${p.id}: "${p.name}" (${p.price} €/${p.unit}) - Opciones: ${(p.options || []).join(', ')}`
     ).join('\n');
 
-    const applianceAdvice = {
-      airfryer: 'IMPORTANTE: Se va a cocinar en AIRFRYER (Freidora de aire). Aconseja cortes no excesivamente secos o grosor adecuado para que quede jugoso sin resecar.',
-      horno: 'IMPORTANTE: Se cocinará al HORNO. Aconseja cortes que agradezcan asado lento o piezas marcadas.',
-      olla_guiso: 'IMPORTANTE: Se cocinará en OLLA o GUISO. Recomienda cortes melosos troceados para estofado.',
-      sarten: 'IMPORTANTE: Se cocinará en SARTÉN / PLANCHA. Recomienda cortes en filetes vuelta y vuelta o grosor estándar.'
-    }[appliance] || 'Método de cocción libre.';
+    const applianceLabels = {
+      sarten: 'Sartén / Plancha',
+      airfryer: 'Airfryer (Freidora de aire)',
+      horno: 'Horno tradicional',
+      olla_guiso: 'Olla / Guiso / Olla rápida'
+    };
+
+    const userAppliancesList = appliances.map(a => applianceLabels[a] || a).join(', ');
 
     const prompt = `
 Eres el maestro carnicero y chef de "Carnicería Parque Hispanidad" en Zaragoza.
@@ -49,22 +51,26 @@ seleccionando ÚNICAMENTE cortes de carne que realmente existen en nuestro catá
 CATÁLOGO REAL DE LA CARNICERÍA:
 ${productCatalogBrief}
 
-DATOS DE LA SOLICITUD DEL VECINO:
+DATOS DEL VECINO:
 - Modalidad: ${mode} ("menu_semanal", "chef_gourmet", "nevera", "receta_libre")
 - Petición / Ingredientes que tiene: "${query || 'Sugerencia del chef'}"
 - Número de comensales: ${diners} personas
-- Electrodoméstico / Cocinado: ${appliance} (${applianceAdvice})
+- ELECTRODOMÉSTICOS DE LOS QUE DISPONE EN SU COCINA: [${userAppliancesList}]
 - Enfoque saludable: ${healthy ? 'Sí, equilibrado, rico en nutrientes y con técnicas digestivas' : 'Estándar'}
+
+IMPORTANTE: El usuario dispone de varios electrodomésticos (${userAppliancesList}).
+Como Chef experto, debes ELEGIR y RECOMENDAR cuál de ellos es el MEJOR para esta elaboración concreta, y explicarle por qué (ej: si tiene horno y airfryer, aconsejarle la airfryer para tardar 12 min y ahorrar luz; o si tiene sartén y olla, aconsejarle la sartén para vuelta y vuelta).
 
 Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estructura (sin formato Markdown ni texto extra):
 {
   "recipe_title": "Nombre atractivo de la receta o menú",
   "subtitle": "Breve frase apetitosa",
   "diners": ${diners},
-  "appliance": "${appliance}",
+  "recommended_appliance": "sarten|airfryer|horno|olla_guiso (debe ser uno de los que tiene el usuario)",
+  "recommended_appliance_label": "Nombre amigable (ej: Airfryer)",
   "prep_time_minutes": 35,
   "healthy_tip": "Consejo nutricional del carnicero para hacerla saludable y digestiva",
-  "appliance_tip": "Consejo específico para que quede perfecto usando ${appliance}",
+  "appliance_tip": "Por qué le recomiendas este electrodoméstico entre los que tiene y el truco de cocinado",
   "ingredients_to_buy": [
     {
       "product_id": 1,
@@ -72,7 +78,7 @@ Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estru
       "quantity": 0.5,
       "unit": "kg",
       "preparation": "Una de las opciones exactas del producto (ej: filetes muy finos, troceado para guiso)",
-      "reason": "Por qué este corte es el ideal para esta receta"
+      "reason": "Por qué este corte es el ideal para esta receta y este método de cocinado"
     }
   ],
   "pantry_ingredients": [
@@ -116,22 +122,30 @@ Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estru
   /**
    * Motor Culinario de respaldo con recetas maestras probadas
    */
-  static generateFallbackRecipe({ mode, query = '', diners = 4, appliance = 'sarten', healthy = true, availableProducts = [] }) {
+  static generateFallbackRecipe({ mode, query = '', diners = 4, appliances = ['sarten'], healthy = true, availableProducts = [] }) {
     const q = query.toLowerCase();
+
+    const hasAirfryer = appliances.includes('airfryer');
+    const hasHorno = appliances.includes('horno');
+    const hasOlla = appliances.includes('olla_guiso');
+    const hasSarten = appliances.includes('sarten');
 
     // 1. Canelones o pasta rellena
     if (q.includes('canelon') || q.includes('lasa') || q.includes('pasta')) {
       const minQty = Math.round((diners * 0.15) * 100) / 100;
+      const chosenAppliance = hasAirfryer ? 'airfryer' : (hasHorno ? 'horno' : 'sarten');
+      
       return {
         recipe_title: "Canelones Caseros Tradicionales de Fiesta",
         subtitle: `Relleno meloso y suave para ${diners} comensales`,
         diners: diners,
-        appliance: appliance === 'indiferente' ? 'horno' : appliance,
-        prep_time_minutes: 45,
+        recommended_appliance: chosenAppliance,
+        recommended_appliance_label: chosenAppliance === 'airfryer' ? '🍟 Airfryer' : (chosenAppliance === 'horno' ? '🥘 Horno' : '🍳 Sartén'),
+        prep_time_minutes: 40,
         healthy_tip: "Añade calabacín o zanahoria muy picadita al sofrito: aporta humedad natural, fibra y reduce las calorías de la bechamel.",
-        appliance_tip: appliance === 'airfryer' 
-          ? "En airfryer usa un molde de aluminio o silicona a 180°C durante 10 minutos para un gratinado crujiente sin resecar la pasta." 
-          : "Gratina en el tercio superior del horno a 200°C con calor arriba y grill.",
+        appliance_tip: chosenAppliance === 'airfryer' 
+          ? "Como dispones de Airfryer, te recomiendo usarla: en un molde a 180°C gratinarás en solo 10 minutos ahorrando un 70% de luz respecto al horno." 
+          : "Al disponer de Horno, el gratinado tradicional en bandeja grande es el rey: 200°C con grill durante 12 minutos.",
         ingredients_to_buy: [
           {
             product_id: 3,
@@ -173,8 +187,10 @@ Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estru
           {
             number: 4,
             title: "Gratinado final",
-            instruction: "Introduce en el horno o airfryer hasta que la superficie esté dorada y burbujeante.",
-            timer_minutes: 12
+            instruction: chosenAppliance === 'airfryer' 
+              ? "Gratina en tu Airfryer a 180°C durante 10 minutos hasta que la bechamel burbujee." 
+              : "Introduce en el horno precalentado a 200°C con grill hasta dorar.",
+            timer_minutes: 10
           }
         ]
       };
@@ -182,22 +198,26 @@ Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estru
 
     // 2. Menú Semanal Saludable (4 días)
     if (mode === 'menu_semanal' || q.includes('menu') || q.includes('semanal') || q.includes('semana')) {
+      const best = hasAirfryer ? 'airfryer' : (hasSarten ? 'sarten' : 'horno');
       return {
         recipe_title: "Plan Semanal Equilibrado (4 Días Ligeros)",
         subtitle: `Menú variado, digestivo y rico en proteínas para ${diners} personas`,
         diners: diners,
-        appliance: appliance,
+        recommended_appliance: best,
+        recommended_appliance_label: best === 'airfryer' ? '🍟 Airfryer + Plancha' : '🍳 Sartén / Plancha',
         prep_time_minutes: 30,
         healthy_tip: "Alternamos carnes blancas ligeras entre semana con ternera magra rica en hierro y zinc para mantener la energía sin digestiones pesadas.",
-        appliance_tip: "Ideal para combinar plancha rápida (martes y jueves) con guiso de olla (miércoles) y horno/airfryer (lunes).",
+        appliance_tip: hasAirfryer 
+          ? "Dispones de Airfryer: es la aliada perfecta para el pollo y las hamburguesas sin añadir nada de grasa extra, combinando con plancha rápida para la ternera." 
+          : "Con tu sartén/plancha cocinarás vuelta y vuelta a fuego vivo, conservando todos los jugos naturales de la carne.",
         ingredients_to_buy: [
           {
             product_id: 4,
             product_name: "Pechuga de Pollo de Corral",
             quantity: Math.max(0.5, Math.round(diners * 0.2 * 100) / 100),
             unit: "kg",
-            preparation: "Fileteada normal",
-            reason: "Día 1: Pechugas al limón con hierbas provenzales a la plancha o airfryer."
+            preparation: hasAirfryer ? "Tacos para arroz o fajitas" : "Fileteada normal",
+            reason: hasAirfryer ? "En tacos para airfryer: queda dorada por fuera y súper tierna por dentro." : "Fileteada normal para vuelta y vuelta en plancha."
           },
           {
             product_id: 1,
@@ -225,7 +245,9 @@ Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estru
           {
             number: 1,
             title: "Lunes - Pollo aromático",
-            instruction: "Marina las pechugas con zumo de limón, ajo picado y tomillo 10 minutos. Cocínalas a la plancha o airfryer (185°C 8 min).",
+            instruction: hasAirfryer 
+              ? "Marina los tacos de pollo 10 min con limón y orégano. Cocínalos en Airfryer a 190°C durante 10 minutos." 
+              : "Cocina a la plancha muy caliente 2 minutos por lado con limón y tomillo.",
             timer_minutes: 8
           },
           {
@@ -244,16 +266,17 @@ Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estru
       };
     }
 
-    // 3. Airfryer específico
-    if (appliance === 'airfryer' || q.includes('airfryer') || q.includes('freidora')) {
+    // 3. Si tiene Airfryer y busca algo rápido o crujiente
+    if (hasAirfryer && (q.includes('pollo') || q.includes('rapido') || q.includes('cena') || q.includes('airfryer') || !q)) {
       return {
-        recipe_title: "Pollo Crujiente Especiado en Airfryer (Zero Grasa)",
+        recipe_title: "Pollo Crujiente Especiado en Airfryer (Zero Aceite)",
         subtitle: `Tierno por dentro y crujiente por fuera para ${diners} personas`,
         diners: diners,
-        appliance: "airfryer",
+        recommended_appliance: "airfryer",
+        recommended_appliance_label: "🍟 Airfryer (La mejor opción)",
         prep_time_minutes: 20,
         healthy_tip: "Al usar la freidora de aire reducimos el 80% del aceite sin perder la textura crujiente de un asado.",
-        appliance_tip: "Precalienta la airfryer 3 minutos a 200°C antes de meter la carne para sellar los poros de inmediato.",
+        appliance_tip: "De todos tus electrodomésticos, la Airfryer es la mejor hoy: tardarás solo 12 minutos y no ensuciarás sartenes con salpicaduras.",
         ingredients_to_buy: [
           {
             product_id: 4,
@@ -294,15 +317,19 @@ Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estru
     }
 
     // 4. Guiso tradicional / Olla
-    if (appliance === 'olla_guiso' || q.includes('guiso') || q.includes('estofad') || q.includes('ternasco')) {
+    if ((hasOlla || hasHorno) && (q.includes('guiso') || q.includes('estofad') || q.includes('ternasco') || q.includes('patatas') || q.includes('cuchara'))) {
+      const best = hasOlla ? 'olla_guiso' : 'horno';
       return {
-        recipe_title: "Caldereta Tradicional Aragonesa al Fuego Lento",
+        recipe_title: "Caldereta Tradicional Aragonesa al Chup-chup",
         subtitle: `Guiso meloso con salsa de verduras para ${diners} personas`,
         diners: diners,
-        appliance: "olla_guiso",
+        recommended_appliance: best,
+        recommended_appliance_label: best === 'olla_guiso' ? '🍲 Olla tradicional / Rápida' : '🥘 Horno',
         prep_time_minutes: 50,
         healthy_tip: "La cocción lenta descompone el colágeno de forma natural creando una salsa espesa y sedosa sin necesidad de añadir harinas.",
-        appliance_tip: "Si usas olla rápida, 22 minutos bastan tras subir la válvula; en olla tradicional, 50 minutos a fuego suave.",
+        appliance_tip: hasOlla 
+          ? "Te aconsejo tu olla: el chup-chup concentra los aromas del ternasco con el laurel y las verduras como ninguna otra técnica." 
+          : "En horno a 160°C tapado con papel de aluminio conseguirás el mismo efecto de guiso meloso.",
         ingredients_to_buy: [
           {
             product_id: 7,
@@ -343,15 +370,16 @@ Debes responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estru
       };
     }
 
-    // 5. Chef Gourmet / Por defecto
+    // 5. Chef Gourmet / Sartén
     return {
       recipe_title: "Entrecot a la Sartén de Hierro con Mantequilla de Romero",
       subtitle: `Técnica de asador para disfrutar de un corte supremo (${diners} comensales)`,
       diners: diners,
-      appliance: "sarten",
+      recommended_appliance: "sarten",
+      recommended_appliance_label: "🍳 Sartén / Plancha (Imbatible)",
       prep_time_minutes: 15,
       healthy_tip: "Atemperar la carne 30 minutos antes de cocinar permite que el interior alcance la temperatura deseada sin quemar la grasa exterior.",
-      appliance_tip: "Usa sartén muy caliente (humo incipiente). Pon la sal en escamas al final para conservar todos los jugos.",
+      appliance_tip: "Para este corte noble, la sartén de hierro o plancha bien caliente es insuperable: conseguirás la Reacción de Maillard perfecta en 4 minutos.",
       ingredients_to_buy: [
         {
           product_id: 2,
