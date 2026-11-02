@@ -7,6 +7,7 @@ const WhatsAppService = require('./services/whatsappService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '127.0.0.1';
 
 // Middlewares
 app.use(cors());
@@ -226,11 +227,12 @@ app.get('/', (req, res) => {
 });
 
 // Iniciar servidor
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
   console.log(`====================================================`);
   console.log(`🥩 CARNICERÍA DIGITAL - SERVIDOR ACTIVO`);
-  console.log(`🌐 Acceso Catálogo Vecinos: http://localhost:${PORT}`);
-  console.log(`📋 Panel del Carnicero:     http://localhost:${PORT}/panel.html`);
-  console.log(`⚙️  Administración Tienda:   http://localhost:${PORT}/admin.html`);
+  console.log(`🌐 Escuchando en:           http://${HOST}:${PORT}`);
+  console.log(`📱 Catálogo Vecinos:        http://${HOST}:${PORT}`);
+  console.log(`📋 Panel del Carnicero:     http://${HOST}:${PORT}/panel.html`);
+  console.log(`⚙️  Administración Tienda:   http://${HOST}:${PORT}/admin.html`);
   console.log(`====================================================`);
 });
