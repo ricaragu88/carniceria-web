@@ -7,6 +7,9 @@ let currentCategory = 'TODOS';
 let cart = [];
 let storeConfig = null;
 
+window.updateCartUI = updateCartUI;
+window.showToastNotification = showToastNotification;
+
 // Cargar datos al iniciar
 document.addEventListener('DOMContentLoaded', async () => {
   await loadStoreConfig();
@@ -118,6 +121,7 @@ async function loadProducts() {
     const data = await res.json();
     if (data.success) {
       allProducts = data.products;
+      window.allProducts = allProducts;
       renderProducts();
     }
   } catch (err) {
@@ -277,6 +281,7 @@ function addToCart(productId) {
 }
 
 function updateCartUI() {
+  window.cart = cart;
   const countBadge = document.getElementById('cart-count');
   const floatingBtn = document.getElementById('floating-cart-btn');
   const cartTotalDisplay = document.getElementById('floating-cart-total');

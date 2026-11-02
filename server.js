@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const DB = require('./database');
 const WhatsAppService = require('./services/whatsappService');
+const GeminiChefService = require('./services/geminiChefService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -141,7 +142,29 @@ app.delete('/api/products/:id', (req, res) => {
   }
 });
 
-// 3. Pedidos
+// 3. Asistente Chef y Recetas Inteligentes
+app.post('/api/chef/generate', async (req, res) => {
+  try {
+    const { mode, query, diners, appliance, healthy } = req.body;
+    const availableProducts = DB.getProducts(false); // Solo productos disponibles
+
+    const recipe = await GeminiChefService.generateRecipe({
+      mode: mode || 'chef_gourmet',
+      query: query || '',
+      diners: parseInt(diners) || 4,
+      appliance: appliance || 'sarten',
+      healthy: healthy !== false,
+      availableProducts
+    });
+
+    res.json({ success: true, recipe });
+  } catch (error) {
+    console.error('Error generando receta:', error);
+    res.status(500).json({ success: false, error: 'No se pudo generar la receta. Inténtalo de nuevo.' });
+  }
+});
+
+// 4. Pedidos
 // Crear pedido desde el catálogo (Vecino)
 app.post('/api/orders', (req, res) => {
   try {
